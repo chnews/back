@@ -172,7 +172,8 @@ exports.onlycat = async (req, res) => {
             .populate('categories', '_id name slug')
             .sort({ createdAt: -1 })
             .limit(16)
-            .skip(0);
+            .skip(0)
+            .select('_id title slug excerpt categories tags postedBy createdAt updatedAt');
         }else{
             posts = await Blog.find();
         }
