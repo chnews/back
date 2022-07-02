@@ -12,7 +12,9 @@ const {
     listSearch,
     listByUser,
     lists,
-    all
+    all,
+    eonlycat,
+    latest
 } = require('../controllers/eblog');
 
 const { requireSignin, adminMiddleware, authMiddleware, canUpdateDeleteBlog } = require('../controllers/auth');
@@ -21,6 +23,7 @@ const eblog = require('../models/eblog');
 router.post('/eblog', requireSignin, adminMiddleware, create);
 router.get('/eblogs', list);
 router.get('/eposts', lists);
+router.get('/elatest', latest);
 router.post('/eblogs-categories-tags', listAllBlogsCategoriesTags);
 router.get('/eblog/:slug', read);
 router.delete('/eblog/:slug', requireSignin, adminMiddleware, remove);
@@ -29,6 +32,7 @@ router.get('/eblog/photo/:slug', photo);
 router.post('/eblogs/related', listRelated);
 router.get('/eblogs/search', listSearch);
 router.get('/enews', all);
+router.get('/eonlycat', eonlycat);
 
 // auth user blog crud
 // router.post('/user/blog', requireSignin, authMiddleware, create);
