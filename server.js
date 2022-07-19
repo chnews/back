@@ -17,15 +17,16 @@ const corsOptions ={
 
 
 //import routes
-const blogRoutes = require('./routes/blog')
-const eblogRoutes = require('./routes/eblog')
+const blogRoutes = require('./routes/blog');
+const eblogRoutes = require('./routes/eblog');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const categoryRoutes = require('./routes/category');
+const ecategoryRoutes = require('./routes/ecategory');
 const tagRoutes = require('./routes/tag');
 const adsRoutes = require('./routes/ads');
 const pageRoute = require('./routes/page');
-const pollRoute = require('./routes/poll')
+const pollRoute = require('./routes/poll');
 
 
 //app
@@ -53,11 +54,12 @@ if(process.env.NODE_ENV === 'development'){
 app.use(cors(corsOptions));
 
 //routes middleware
-app.use('/api', blogRoutes)
-app.use('/api', eblogRoutes)
+app.use('/api', blogRoutes);
+app.use('/api', eblogRoutes);
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', categoryRoutes);
+app.use('/api', ecategoryRoutes);
 app.use('/api', tagRoutes);
 app.use('/api', adsRoutes);
 app.use('/api', pageRoute);

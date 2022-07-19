@@ -1,5 +1,5 @@
 const Blog = require('../models/eblog');
-const Category = require('../models/category');
+const Category = require('../models/ecategory');
 const Tag = require('../models/tag');
 const User = require('../models/User');
 const formidable = require('formidable');
@@ -56,9 +56,29 @@ exports.create = (req, res) => {
         blog.title = title;
         blog.body = body;
         blog.excerpt = smartTrim(body, 200, ' ', ' ...');
-        blog.slug = slugifi(title);
-        blog.mtitle = `${title} | ${process.env.APP_NAME}`;
-        blog.mdesc = body.substring(0, 160);
+        
+        // blog.slug = slugifi(title);
+        if(!slug || slug.length === 0){
+            blog.slug = slugifi(title)
+        }else{
+            blog.slug = slug
+        }
+
+        
+        // blog.mtitle = `${title} | ${process.env.APP_NAME}`;
+        if(!mtitle || mtitle.length === 0){
+            blog.mtitle = `${title} | ${process.env.APP_NAME}`
+        }else{
+            blog.mtitle = mtitle
+        }
+
+        // blog.mdesc = body.substring(0, 160);
+        if(!mdesc || mdesc.length === 0){
+            blog.mdesc = body.substring(0, 160)
+        }else{
+            blog.mdesc = mdesc
+        }
+       
         blog.postedBy = req.user._id;
         // categories and tags
         let arrayOfCategories = categories && categories.split(',');

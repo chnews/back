@@ -101,3 +101,18 @@ exports.photo = (req, res) => {
         }
     });
 };
+
+exports.users = (req, res) => {
+    User.find({}).exec((err, users) => {
+        if (err) {
+            return res.status(400).json({
+                error: errorHandler(err)
+            });
+        }
+        res.json(users);
+    });
+}
+
+
+
+

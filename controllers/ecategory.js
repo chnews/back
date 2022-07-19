@@ -1,5 +1,5 @@
-const Category = require('../models/category');
-const Blog = require('../models/blog.js');
+const Category = require('../models/ecategory');
+const Blog = require('../models/eblog.js');
 const slugify = require('slugify');
 const { errorHandler } = require('../helpers/dbErrorHandler');
 

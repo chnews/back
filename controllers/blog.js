@@ -20,7 +20,7 @@ exports.create = (req, res) => {
             });
         }
 
-        const { title, body, categories, tags } = fields;
+        const { title, body, slug, mtitle, mdesc, categories, tags } = fields;
 
         if (!title || !title.length) {
             return res.status(400).json({
@@ -52,13 +52,34 @@ exports.create = (req, res) => {
         
         }
 
+       
+
         let blog = new Blog();
         blog.title = title;
         blog.body = body;
         blog.excerpt = smartTrim(body, 200, ' ', ' ...');
-        blog.slug = slugifi(title);
-        blog.mtitle = `${title} | ${process.env.APP_NAME}`;
-        blog.mdesc = body.substring(0, 160);
+        // blog.slug = slugifi(title);
+        if(!slug || slug.length === 0){
+            blog.slug = slugifi(title)
+        }else{
+            blog.slug = slug
+        }
+
+        
+        // blog.mtitle = `${title} | ${process.env.APP_NAME}`;
+        if(!mtitle || mtitle.length === 0){
+            blog.mtitle = `${title} | ${process.env.APP_NAME}`
+        }else{
+            blog.mtitle = mtitle
+        }
+
+        // blog.mdesc = body.substring(0, 160);
+        if(!mdesc || mdesc.length === 0){
+            blog.mdesc = body.substring(0, 160)
+        }else{
+            blog.mdesc = mdesc
+        }
+        
         blog.postedBy = req.user._id;
         // categories and tags
         let arrayOfCategories = categories && categories.split(',');
@@ -133,6 +154,22 @@ exports.lists = (req, res) => {
         .sort({ createdAt: -1 })
         .skip(0)
         .select('_id title slug excerpt categories tags postedBy createdAt updatedAt')
+        .exec((err, data) => {
+            if (err) {
+                return res.json({
+                    error: errorHandler(err)
+                });
+            }
+            res.json(data);
+        });
+};
+
+exports.images = (req, res) => {
+    Blog.find({})
+        .populate('_id')
+        .sort({ createdAt: -1 })
+        .skip(0)
+        .select('_id photo')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -339,6 +376,26 @@ exports.photo = (req, res) => {
         });
 };
 
+// exports.images = (req, res) => {
+//     Blog.find({})
+//         .exec((err, image) => {
+//             if (err || !image) {
+//                 return res.status(400).json({
+//                     error: errorHandler(err)
+//                 });
+//             }
+//             res.set('Content-Type', image.photo.contentType);
+//             return res.send(image.photo.data);
+//         });
+// };
+
+
+
+
+// exports.images =  async (req, res)=>{
+//     const image = await Blog.find().sort({createdAt: -1});
+//     res.json(image);
+// };
 
 
 exports.listRelated = (req, res) => {
@@ -437,6 +494,7 @@ exports.all = async (req, res) => {
         }
     });
   };
+
 
 
 

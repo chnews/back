@@ -14,7 +14,8 @@ const {
     lists,
     all,
     latest,
-    onlycat
+    onlycat,
+    images
 } = require('../controllers/blog');
 
 const { requireSignin, adminMiddleware, authMiddleware, canUpdateDeleteBlog } = require('../controllers/auth');
@@ -23,6 +24,7 @@ const blog = require('../models/blog');
 router.post('/blog', requireSignin, adminMiddleware, create);
 router.get('/blogs', list);
 router.get('/posts', lists);
+router.get('/images', images);
 router.get('/latest', latest);
 router.post('/blogs-categories-tags', listAllBlogsCategoriesTags);
 router.get('/blog/:slug', read);

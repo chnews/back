@@ -34,6 +34,7 @@ router.get('/eblogs/search', listSearch);
 router.get('/enews', all);
 router.get('/eonlycat', eonlycat);
 
+
 // auth user blog crud
 // router.post('/user/blog', requireSignin, authMiddleware, create);
 // router.get('/:username/blogs', listByUser);
