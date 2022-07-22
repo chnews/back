@@ -14,7 +14,9 @@ const {
     lists,
     all,
     eonlycat,
-    latest
+    latest,
+    escroll,
+    scroll
 } = require('../controllers/eblog');
 
 const { requireSignin, adminMiddleware, authMiddleware, canUpdateDeleteBlog } = require('../controllers/auth');
@@ -23,6 +25,7 @@ const eblog = require('../models/eblog');
 router.post('/eblog', requireSignin, adminMiddleware, create);
 router.get('/eblogs', list);
 router.get('/eposts', lists);
+router.get('/escroll', scroll);
 router.get('/elatest', latest);
 router.post('/eblogs-categories-tags', listAllBlogsCategoriesTags);
 router.get('/eblog/:slug', read);

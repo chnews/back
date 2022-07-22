@@ -15,7 +15,8 @@ const {
     all,
     latest,
     onlycat,
-    images
+    images,
+    scroll
 } = require('../controllers/blog');
 
 const { requireSignin, adminMiddleware, authMiddleware, canUpdateDeleteBlog } = require('../controllers/auth');
@@ -35,6 +36,7 @@ router.post('/blogs/related', listRelated);
 router.get('/blogs/search', listSearch);
 router.get('/news', all);
 router.get('/onlycat', onlycat);
+router.get('/scroll', scroll);
 
 
 

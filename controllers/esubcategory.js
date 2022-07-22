@@ -1,26 +1,39 @@
-const Category = require('../models/category');
-const Blog = require('../models/blog.js');
+const Subcategory = require('../models/esubcategory');
+const Category = require('../models/ecategory');
+const Blog = require('../models/eblog.js');
 const slugify = require('slugify');
 const { errorHandler } = require('../helpers/dbErrorHandler');
 
 exports.create = (req, res) => {
-    const { name, show } = req.body;
+    const { name } = req.body;
+    const { show } = req.body;
+    const { category } = req.body;
     let slug = slugify(name).toLowerCase();
 
-    let category = new Category({ name, slug, show });
-
-    category.save((err, data) => {
+    let subcategory = new Subcategory({ name, slug, show, category });
+    let arrayOfCategories = category && category.split(',');
+    subcategory.save((err, data) => {
         if (err) {
             return res.status(400).json({
                 error: errorHandler(err)
             });
         }
-        res.json(data);
+        Subcategory.findByIdAndUpdate(data._id, { $push: { category: arrayOfCategories } }, { new: true }).exec(
+            (err, data) => {
+                if (err) {
+                    return res.status(400).json({
+                        error: errorHandler(err)
+                    });
+                } else {
+                   res.json(data);
+                }
+            }
+        );
     });
 };
 
 exports.list = (req, res) => {
-    Category.find({}).exec((err, data) => {
+    Subcategory.find({}).exec((err, data) => {
         if (err) {
             return res.status(400).json({
                 error: errorHandler(err)
@@ -44,14 +57,14 @@ exports.allCat = (req, res) => {
 exports.read = (req, res) => {
     const slug = req.params.slug.toLowerCase();
 
-    Category.findOne({ slug }).exec((err, category) => {
+    Subcategory.findOne({ slug }).exec((err, subcategory) => {
         if (err) {
             return res.status(400).json({
                 error: errorHandler(err)
             });
         }
         // res.json(category);
-        Blog.find({ categories: category, status: "published"})
+        Blog.find({ subcategories: subcategory })
             .sort({createdAt: -1})
             .populate('categories', '_id name slug')
             .populate('tags', '_id name slug')
@@ -63,7 +76,7 @@ exports.read = (req, res) => {
                         error: errorHandler(err)
                     });
                 }
-                res.json({ category: category, blogs: data });
+                res.json({ subcategory: subcategory, blogs: data });
             });
     });
 };

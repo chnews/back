@@ -37,10 +37,20 @@ const blogSchema = new mongoose.Schema(
             contentType: String
         },
         categories: [{ type: ObjectId, ref: 'Category', required: true }],
-        tags: [{ type: ObjectId, ref: 'Tag', required: true }],
+        subcategories: [{ type: ObjectId, ref: 'Subcategory', required: false }],
+        tags: [{ type: ObjectId, ref: 'Tag', required: false }],
         postedBy: {
             type: ObjectId,
             ref: 'User'
+        },
+        status: {
+            type: String
+        },
+        featured: {
+            type: String
+        },
+        scrol: {
+            type: String
         }
     },
     { timestamps: true }

@@ -1,5 +1,6 @@
 const Blog = require('../models/blog');
 const Category = require('../models/category');
+const Subcategory = require('../models/subcategory');
 const Tag = require('../models/tag');
 const User = require('../models/User');
 const formidable = require('formidable');
@@ -20,7 +21,7 @@ exports.create = (req, res) => {
             });
         }
 
-        const { title, body, slug, mtitle, mdesc, categories, tags } = fields;
+        const { title, body, slug, mtitle, mdesc, categories, tags, status, featured, scrol, subcategories } = fields;
 
         if (!title || !title.length) {
             return res.status(400).json({
@@ -81,8 +82,12 @@ exports.create = (req, res) => {
         }
         
         blog.postedBy = req.user._id;
+        blog.status = status;
+        blog.featured = featured;
+        blog.scrol = scrol;
         // categories and tags
         let arrayOfCategories = categories && categories.split(',');
+        let arrayOfSubcategories = subcategories && subcategories.split(',');
         let arrayOfTags = tags && tags.split(',');
 
         if (files.photo) {
@@ -116,7 +121,17 @@ exports.create = (req, res) => {
                                         error: errorHandler(err)
                                     });
                                 } else {
-                                    res.json(result);
+                                    Blog.findByIdAndUpdate(result._id, { $push: { subcategories: arrayOfSubcategories } }, { new: true }).exec(
+                                        (err, result) => {
+                                            if (err) {
+                                                return res.status(400).json({
+                                                    error: errorHandler(err)
+                                                });
+                                            } else {
+                                                res.json(result);
+                                            }
+                                        }
+                                    );
                                 }
                             }
                         );
@@ -127,15 +142,16 @@ exports.create = (req, res) => {
     });
 };
 
-// list, listAllBlogsCategoriesTags, read, remove, update
+
 
 exports.list = (req, res) => {
     Blog.find({})
         .populate('categories', '_id name slug')
+        .populate('subcategories', '_id name category slug')
         .populate('tags', '_id name slug')
         .populate('postedBy', '_id name username')
         .sort({ createdAt: -1 })
-        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt')
+        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt featured scrol status')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -147,13 +163,14 @@ exports.list = (req, res) => {
 };
 
 exports.lists = (req, res) => {
-    Blog.find({})
+    Blog.find({status: 'published'})
         .populate('categories', '_id name slug')
+        .populate('subcategories', '_id name category slug')
         .populate('tags', '_id name slug')
         .populate('postedBy', '_id name username')
         .sort({ createdAt: -1 })
         .skip(0)
-        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt')
+        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt featured scrol status')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -181,14 +198,15 @@ exports.images = (req, res) => {
 };
 
 exports.latest = async (req, res) => {
-   Blog.find({})
+   Blog.find({featured: "yes", status: 'published'})
         .populate('categories', '_id name slug')
+        .populate('subcategories', '_id name category slug')
         .populate('tags', '_id name slug')
         .populate('postedBy', '_id name username')
         .sort({ createdAt: -1 })
         .skip(0)
-        .limit(3)
-        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt')
+        .limit(10)
+        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt featured scrol status')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -199,18 +217,39 @@ exports.latest = async (req, res) => {
         });
 };
 
+exports.scroll = async (req, res) => {
+    Blog.find({scrol: "yes", status: 'published'})
+         .populate('categories', '_id name slug')
+         .populate('subcategories', '_id name category slug')
+         .populate('tags', '_id name slug')
+         .populate('postedBy', '_id name username')
+         .sort({ createdAt: -1 })
+         .skip(0)
+         .limit(10)
+         .select('_id title slug excerpt categories tags postedBy createdAt updatedAt featured scrol status')
+         .exec((err, data) => {
+             if (err) {
+                 return res.json({
+                     error: errorHandler(err)
+                 });
+             }
+             res.json(data);
+         });
+ };
+
+
 exports.onlycat = async (req, res) => {
     const categories = req.query.cat;
     
     try{
         let posts;
         if(categories){
-            posts = await Blog.find({categories})
+            posts = await Blog.find({categories, status: 'published'})
             .populate('categories', '_id name slug')
             .sort({ createdAt: -1 })
             .limit(16)
             .skip(0)
-            .select('_id title slug excerpt categories tags postedBy createdAt updatedAt');
+            .select('_id title slug excerpt categories subcategories tags postedBy createdAt updatedAt featured scrol status');
         }else{
             posts = await Blog.find();
         }
@@ -236,7 +275,7 @@ exports.listAllBlogsCategoriesTags = (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt')
+        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt featured scrol status')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -269,12 +308,12 @@ exports.listAllBlogsCategoriesTags = (req, res) => {
 
 exports.read = (req, res) => {
     const slug = req.params.slug.toLowerCase();
-    Blog.findOne({ slug })
+    Blog.findOne({ slug, status: 'published' })
         // .select("-photo")
         .populate('categories', '_id name slug')
         .populate('tags', '_id name slug')
         .populate('postedBy', '_id name username')
-        .select('_id title body slug mtitle mdesc categories tags postedBy createdAt updatedAt')
+        .select('_id title body slug mtitle mdesc categories tags postedBy createdAt updatedAt featured scrol status')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -494,6 +533,25 @@ exports.all = async (req, res) => {
         }
     });
   };
+
+//   exports.allImages = (req, res) => {
+//     Blog.find({})
+//         .populate('categories', '_id name slug')
+//         .populate('tags', '_id name slug')
+//         .populate('postedBy', '_id name username')
+//         .sort({ createdAt: -1 })
+//         .skip(0)
+//         .limit(3)
+//         .select('_id title slug excerpt categories tags postedBy createdAt updatedAt')
+//         .exec((err, data) => {
+//             if (err) {
+//                 return res.json({
+//                     error: errorHandler(err)
+//                 });
+//             }
+//             res.json(data);
+//         });
+// };
 
 
 

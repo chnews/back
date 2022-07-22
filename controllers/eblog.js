@@ -20,7 +20,7 @@ exports.create = (req, res) => {
             });
         }
 
-        const { title, body, categories, tags } = fields;
+        const { title, body, categories, tags, slug, mtitle, mdesc, status, featured, scrol } = fields;
 
         if (!title || !title.length) {
             return res.status(400).json({
@@ -80,6 +80,9 @@ exports.create = (req, res) => {
         }
        
         blog.postedBy = req.user._id;
+        blog.status = status;
+        blog.featured = featured;
+        blog.scrol = scrol;
         // categories and tags
         let arrayOfCategories = categories && categories.split(',');
         let arrayOfTags = tags && tags.split(',');
@@ -134,7 +137,7 @@ exports.list = (req, res) => {
         .populate('tags', '_id name slug')
         .populate('postedBy', '_id name username')
         .sort({ createdAt: -1 })
-        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt')
+        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt status featured scrol')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -146,13 +149,32 @@ exports.list = (req, res) => {
 };
 
 exports.lists = (req, res) => {
-    Blog.find({})
+    Blog.find({status: 'published'})
         .populate('categories', '_id name slug')
         .populate('tags', '_id name slug')
         .populate('postedBy', '_id name username')
         .sort({ createdAt: -1 })
         .skip(0)
-        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt')
+        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt status featured scrol')
+        .exec((err, data) => {
+            if (err) {
+                return res.json({
+                    error: errorHandler(err)
+                });
+            }
+            res.json(data);
+        });
+};
+
+
+exports.scroll = (req, res) => {
+    Blog.find({status: 'published', scrol: 'yes'})
+        .populate('categories', '_id name slug')
+        .populate('tags', '_id name slug')
+        .populate('postedBy', '_id name username')
+        .sort({ createdAt: -1 })
+        .skip(0)
+        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt status featured scrol')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -164,14 +186,14 @@ exports.lists = (req, res) => {
 };
 
 exports.latest = async (req, res) => {
-    Blog.find({})
+    Blog.find({status: 'published', featured: "yes"})
          .populate('categories', '_id name slug')
          .populate('tags', '_id name slug')
          .populate('postedBy', '_id name username')
          .sort({ createdAt: -1 })
          .skip(0)
-         .limit(3)
-         .select('_id title slug excerpt categories tags postedBy createdAt updatedAt')
+         .limit(10)
+         .select('_id title slug excerpt categories tags postedBy createdAt updatedAt status featured scrol')
          .exec((err, data) => {
              if (err) {
                  return res.json({
@@ -182,6 +204,9 @@ exports.latest = async (req, res) => {
          });
  };
 
+
+
+
 exports.listAllBlogsCategoriesTags = (req, res) => {
     let limit = req.body.limit ? parseInt(req.body.limit) : 10;
     let skip = req.body.skip ? parseInt(req.body.skip) : 0;
@@ -190,14 +215,14 @@ exports.listAllBlogsCategoriesTags = (req, res) => {
     let categories;
     let tags;
 
-    Blog.find({})
+    Blog.find({status: 'published'})
         .populate('categories', '_id name slug')
         .populate('tags', '_id name slug')
         .populate('postedBy', '_id name username profile')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt')
+        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt status featured scrol')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -230,12 +255,12 @@ exports.listAllBlogsCategoriesTags = (req, res) => {
 
 exports.read = (req, res) => {
     const slug = req.params.slug.toLowerCase();
-    Blog.findOne({ slug })
+    Blog.findOne({ slug, status: 'published' })
         // .select("-photo")
         .populate('categories', '_id name slug')
         .populate('tags', '_id name slug')
         .populate('postedBy', '_id name username')
-        .select('_id title body slug mtitle mdesc categories tags postedBy createdAt updatedAt')
+        .select('_id title body slug mtitle mdesc categories tags postedBy createdAt updatedAt status featured scrol')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -344,7 +369,7 @@ exports.listRelated = (req, res) => {
     let limit = req.body.limit ? parseInt(req.body.limit) : 3;
     const { _id, categories } = req.body.blog;
 
-    Blog.find({ _id: { $ne: _id }, categories: { $in: categories } })
+    Blog.find({ _id: { $ne: _id }, categories: { $in: categories }, status: 'published' })
         .limit(limit)
         .sort({createdAt: -1})
         .populate('postedBy', '_id name username profile')
@@ -366,7 +391,7 @@ exports.listSearch = (req, res) => {
     if (search) {
         Blog.find(
             {
-                $or: [{ title: { $regex: search, $options: 'i' } }, { body: { $regex: search, $options: 'i' } }]
+                status: 'published', $or: [{ title: { $regex: search, $options: 'i' } }, { body: { $regex: search, $options: 'i' } }]
             },
             (err, blogs) => {
                 if (err) {
@@ -388,7 +413,7 @@ exports.listByUser = (req, res) => {
             });
         }
         let userId = user._id;
-        Blog.find({ postedBy: userId })
+        Blog.find({ postedBy: userId, status: 'published' })
             .populate('categories', '_id name slug')
             .populate('tags', '_id name slug')
             .populate('postedBy', '_id name username')
@@ -444,12 +469,12 @@ exports.all = async (req, res) => {
     try{
         let posts;
         if(categories){
-            posts = await Blog.find({categories})
+            posts = await Blog.find({categories, status: 'published'})
             .populate('categories', '_id name slug')
             .sort({ createdAt: -1 })
             .limit(16)
             .skip(0)
-            .select('_id title slug excerpt categories tags postedBy createdAt updatedAt');
+            .select('_id title slug excerpt categories tags postedBy createdAt updatedAt status featured scrol');
         }else{
             posts = await Blog.find();
         }

@@ -41,6 +41,16 @@ const eblogSchema = new mongoose.Schema(
         postedBy: {
             type: ObjectId,
             ref: 'User'
+        },
+
+        status: {
+            type: String,
+        },
+        featured: {
+            type: String
+        },
+        scrol: {
+            type: String
         }
     },
     { timestamps: true }

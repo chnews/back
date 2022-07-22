@@ -5,6 +5,8 @@ const formidable = require('formidable');
 const fs = require('fs');
 const { errorHandler } = require('../helpers/dbErrorHandler');
 
+
+
 exports.read = (req, res) => {
     req.profile.hashed_password = undefined;
     return res.json(req.profile);
@@ -83,6 +85,52 @@ exports.update = (req, res) => {
             user.salt = undefined;
             user.photo = undefined;
             res.json(user);
+        });
+    });
+};
+
+
+exports.create = (req, res) => {
+    let form = new formidable.IncomingForm();
+    form.keepExtension = true;
+    form.parse(req, (err, fields, files) => {
+        if (err) {
+            return res.status(400).json({
+                error: 'Photo could not be uploaded'
+            });
+        }
+        
+        const { name, email, about, password, username, role } = fields;
+        let profile = `${process.env.CLIENT_URL}/profile/${username}`;
+
+
+        let user = new User();
+        user.name = name;
+        user.email = email;
+        user.about = about;
+        user.password = password;
+        user.profile = profile;
+        user.username = username;
+        user.role = role;
+
+        if (files.photo) {
+            if (files.photo.size > 10000000) {
+                return res.status(400).json({
+                    error: 'Image should be less than 1mb'
+                });
+            }
+            user.photo.data = fs.readFileSync(files.photo.filepath);
+            user.photo.contentType = files.photo.type;
+        }
+
+        user.save((err, result) => {
+            if (err) {
+                return res.status(400).json({
+                    error: errorHandler(err)
+                });
+            }
+           
+            res.json(result);
         });
     });
 };
