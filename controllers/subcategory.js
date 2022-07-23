@@ -5,10 +5,15 @@ const slugify = require('slugify');
 const { errorHandler } = require('../helpers/dbErrorHandler');
 
 exports.create = (req, res) => {
-    const { name } = req.body;
-    const { show } = req.body;
-    const { category } = req.body;
-    let slug = slugify(name).toLowerCase();
+
+    function slugifi(text) {
+        return text.toLowerCase().replace(text, text).replace(/^-+|-+$/g, '')
+            .replace(/\s/g, '-').replace(/\-\-+/g, '-');
+    
+    }
+
+    const { name, show, category } = req.body;
+    let slug = slugifi(name);
 
     let subcategory = new Subcategory({ name, slug, show, category });
     let arrayOfCategories = category && category.split(',');
@@ -33,7 +38,9 @@ exports.create = (req, res) => {
 };
 
 exports.list = (req, res) => {
-    Subcategory.find({}).exec((err, data) => {
+    Subcategory.find({})
+    .populate('category', '_id name slug')
+    .exec((err, data) => {
         if (err) {
             return res.status(400).json({
                 error: errorHandler(err)
@@ -81,10 +88,12 @@ exports.read = (req, res) => {
     });
 };
 
+
+
 exports.remove = (req, res) => {
     const slug = req.params.slug.toLowerCase();
 
-    Category.findOneAndRemove({ slug }).exec((err, data) => {
+    Subcategory.findOneAndRemove({ slug }).exec((err, data) => {
         if (err) {
             return res.status(400).json({
                 error: errorHandler(err)
