@@ -181,6 +181,42 @@ exports.lists = (req, res) => {
         });
 };
 
+
+exports.allPosts = (req, res) => {
+    Blog.find({})
+        .populate('categories', '_id name slug')
+        .populate('subcategories', '_id name category slug')
+        .populate('tags', '_id name slug')
+        .populate('postedBy', '_id name username')
+        .sort({ createdAt: -1 })
+        .skip(0)
+        .select('_id title slug categories tags postedBy createdAt updatedAt featured scrol status')
+        .exec((err, data) => {
+            if (err) {
+                return res.json({
+                    error: errorHandler(err)
+                });
+            }
+            res.json(data);
+        });
+};
+
+exports.sidenews = (req, res) => {
+    Blog.find({status: 'published'})
+        .sort({ createdAt: -1 })
+        .skip(0)
+        .limit(10)
+        .select('_id title slug')
+        .exec((err, data) => {
+            if (err) {
+                return res.json({
+                    error: errorHandler(err)
+                });
+            }
+            res.json(data);
+        });
+};
+
 exports.images = (req, res) => {
     Blog.find({})
         .populate('_id')
@@ -199,14 +235,10 @@ exports.images = (req, res) => {
 
 exports.latest = async (req, res) => {
    Blog.find({featured: "yes", status: 'published'})
-        .populate('categories', '_id name slug')
-        .populate('subcategories', '_id name category slug')
-        .populate('tags', '_id name slug')
-        .populate('postedBy', '_id name username')
         .sort({ createdAt: -1 })
         .skip(0)
         .limit(10)
-        .select('_id title slug excerpt categories tags postedBy createdAt updatedAt featured scrol status')
+        .select('_id title slug excerpt')
         .exec((err, data) => {
             if (err) {
                 return res.json({
@@ -249,7 +281,7 @@ exports.onlycat = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(16)
             .skip(0)
-            .select('_id title slug excerpt categories subcategories tags postedBy createdAt updatedAt featured scrol status');
+            .select('_id title slug excerpt');
         }else{
             posts = await Blog.find();
         }

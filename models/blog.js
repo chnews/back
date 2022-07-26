@@ -51,6 +51,9 @@ const blogSchema = new mongoose.Schema(
         },
         scrol: {
             type: String
+        },
+        count: {
+            type: Number
         }
     },
     { timestamps: true }

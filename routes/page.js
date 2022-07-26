@@ -14,6 +14,8 @@ const {
    
 } = require('../controllers/page');
 
+const {createPage, getPage} = require('../controllers/pagesController');
+
 
 
 
@@ -28,6 +30,10 @@ router.get('/get-about', getAbout);
 router.get('/get-ads', getAds);
 router.get('/get-editor', getEditor);
 router.get('/get-contact', getContact);
+
+router.post('/add-page', requireSignin, adminMiddleware, createPage);
+router.get('/get-page', getPage);
+
 
 
 

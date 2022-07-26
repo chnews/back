@@ -70,6 +70,7 @@ exports.read = (req, res) => {
         Blog.find({ categories: category, status: "published"})
             .sort({createdAt: -1})
             .populate('categories', '_id name slug')
+            .populate('subcategories', '_id name category slug')
             .populate('tags', '_id name slug')
             .populate('postedBy', '_id name')
             .select('_id title slug excerpt categories postedBy tags createdAt updatedAt')
