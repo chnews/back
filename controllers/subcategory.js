@@ -103,4 +103,31 @@ exports.remove = (req, res) => {
             message: 'Category deleted successfully'
         });
     });
+    
 };
+
+
+
+exports.getCategory = async (req, res) => {
+    const category = await Subcategory.find({});
+    res.send(category);
+}
+
+  exports.saveCategory = (req, res) => {
+    const { name, show, category } = req.body;
+
+    Subcategory
+        .create({ name, show, category })
+        .then(() => res.set(201).send("Added Successfully..."))
+        .catch((err) => console.log(err));
+    }
+
+  exports.updateCategory = (req, res) => {
+    const { _id, name, show, category } = req.body;
+
+    Subcategory
+        .findByIdAndUpdate(_id, { name, show, category })
+        .then(() => res.set(201).send("Updated Successfully..."))
+        .catch((err) => console.log(err));
+}
+

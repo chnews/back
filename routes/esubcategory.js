@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { create, list, read, remove, allCat } = require('../controllers/esubcategory');
+const { create, list, read, remove, allCat, saveCategory, updateCategory, getCategory} = require('../controllers/esubcategory');
 
 // validators
 const { runValidation } = require('../validators');
@@ -12,5 +12,10 @@ router.get('/esubcategories', list);
 router.get('/esubcat', allCat);
 router.get('/esubcategory/:slug', read);
 router.delete('/esubcategory/:slug', requireSignin, adminMiddleware, remove);
+
+router.get('/get-escat', getCategory);
+router.post('/save-escat', saveCategory);
+router.post('/update-escat', updateCategory);
+
 
 module.exports = router;

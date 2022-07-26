@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { create, list, read, remove, allCat } = require('../controllers/subcategory');
+const { create, list, read, remove, allCat, saveCategory, updateCategory, getCategory } = require('../controllers/subcategory');
 
 // validators
 const { runValidation } = require('../validators');
@@ -12,5 +12,9 @@ router.get('/subcategories', list);
 router.get('/subcat', allCat);
 router.get('/subcategory/:slug', read);
 router.delete('/subcategory/:slug', requireSignin, adminMiddleware, remove);
+
+router.get('/get-scat', getCategory);
+router.post('/save-scat', saveCategory);
+router.post('/update-scat', updateCategory);
 
 module.exports = router;
