@@ -1,14 +1,8 @@
 const mongoose = require('mongoose');
 
 const FooterAddressSchema = mongoose.Schema({
-    name: {
+    address: {
         type: String,
-        required: false
-    },
-
-    image:{
-        data: Buffer,
-        contentType: String,
         required: false
     }
 

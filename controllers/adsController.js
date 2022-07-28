@@ -13,10 +13,12 @@ const socialLinkModel = require('../models/socialLinkModel')
 const fs = require('fs');
 
 // image upload logic
+
+
 const Storage = multer.diskStorage({
     destination:'uploads',
     filename: (req, file, cb) => {
-        cb(null, file.originalname);
+        cb(null, Date.now() + file.originalname);
     },
 });
 
@@ -305,9 +307,8 @@ exports.footerLogo = (req, res) => {
             console.log(err);
         }else{
             const newImage = new footerLogoModel({
-                name: req.body.name,
                 image:{
-                    data: fs.readFileSync("uploads/" + req.file.filename),
+                    data: fs.readFileSync( "uploads/" + req.file.filename),
                     contentType:'image/png'
                 }
             })
@@ -317,6 +318,8 @@ exports.footerLogo = (req, res) => {
         }
     })
 };
+
+
 
 exports.getFooterLogo =  async (req, res)=>{
     const data = await footerLogoModel.find().sort({createdAt: -1}).limit(1);
@@ -351,6 +354,22 @@ exports.getFooterAdd =  async (req, res)=>{
     const data = await footerAddressModel.find().sort({createdAt: -1}).limit(1);
     res.json(data);
 };
+
+
+
+exports.saveAddress = (req, res) => {
+    const { address } = req.body;
+
+    footerAddressModel
+    .create({ address })
+        .then(() => res.set(201).send("Added Successfully..."))
+        .catch((err) => console.log(err));
+    }
+
+    exports.getAddress = async (req, res) => {
+        const address = await footerAddressModel.find({}).sort({createdAt: -1}).limit(1);
+        res.send(address);
+    }
 
 
 

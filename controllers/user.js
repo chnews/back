@@ -163,4 +163,38 @@ exports.users = (req, res) => {
 
 
 
+exports.getUser = async (req, res) => {
+    const users = await User.find({});
+    res.send(users);
+}
+
+  exports.saveUser = (req, res) => {
+    const { name, username, email, about, role, password } = req.body;
+
+    User
+    .create({ name, username, email, about, role, password })
+        .then(() => res.set(201).send("Added Successfully..."))
+        .catch((err) => console.log(err));
+    }
+
+  exports.updateUser = (req, res) => {
+    const { _id, name, username, email, about, role, password } = req.body;
+
+    User
+        .findByIdAndUpdate(_id, { name, username, email, about, role, password })
+        .then(() => res.set(201).send("Updated Successfully..."))
+        .catch((err) => console.log(err));
+}
+
+exports.deleteUser = (req, res) => {
+    const { _id } = req.body;
+
+    User
+        .findByIdAndDelete(_id)
+        .then(() => res.set(201).send("Deleted Successfully..."))
+        .catch((err) => console.log(err));
+}
+
+
+
 

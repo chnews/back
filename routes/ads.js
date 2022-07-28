@@ -22,7 +22,9 @@ const {
     footerAdd,
     getFooterAdd,
     socialLink,
-    getSocial
+    getSocial,
+    getAddress,
+    saveAddress
 } = require('../controllers/adsController');
 
 
@@ -49,6 +51,10 @@ router.get('/below-post-ads', getbelowPostImg);
 router.get('/get-footer-logo', getFooterLogo);
 router.get('/get-footer-add', getFooterAdd);
 router.get('/get-social', getSocial);
+
+
+router.post('/address/save', saveAddress);
+router.get('/address/get', getAddress);
 
 
 module.exports = router;
